@@ -35,14 +35,22 @@ def org_calendar_list(request, pk):
     organizations = Organization.objects.order_by('organization_name')
     organization = get_object_or_404(Organization, pk=pk)
 
-    events = CalendarEvent.objects.filter(organization=organization)
+    events = CalendarEvent.objects.filter(organization=organization).exclude(event__start_time__lte=datetime.date.today()).order_by('event__start_time')
 
     return render(request, 'calendar_app/org_calendar_list.html', {'events': events, 'organizations': organizations})
 
 
 def event_detail(request, pk):
     event = get_object_or_404(Event, pk=pk)
-    return render(request, 'calendar_app/event_detail.html', {'event': event})
+    calendarevent = CalendarEvent.objects.get(event=event)
+    caleventorg = calendarevent.organization
+    current_user = request.user 
+    if current_user.is_superuser:
+    	organization = Organization.objects.all()
+    else:
+    	userorg = UserOrganization.objects.get(user=current_user)
+    	organization = userorg.organization
+    return render(request, 'calendar_app/event_detail.html', {'event': event, 'caleventorg': caleventorg, 'organization': organization})
 
 
 @login_required
@@ -59,13 +67,17 @@ def event_new(request):
             event.location = form.cleaned_data['location']
             event.save()
 
-            userorg = UserOrganization.objects.get(user=request.user)
-            organization = userorg.organization
+            current_user = request.user
+            if current_user.is_superuser:
+                return redirect('calendar_list')
+            else:
+                userorg = UserOrganization.objects.get(user=current_user)
+                organization = userorg.organization
 
-            new_event = CalendarEvent(event=event, organization=organization, contact="None")
-            new_event.save()
+                new_event = CalendarEvent(event=event, organization=organization, contact="None")
+                new_event.save()
 
-            return redirect('calendar_list')
+                return redirect('calendar_list')
     else:
         form = EventForm()
 

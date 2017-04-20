@@ -74,6 +74,9 @@ class UserOrganization(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
+	def __str__(self):
+		return self.user
+
 class CalendarEvent(models.Model):
 	event = models.ForeignKey(Event, on_delete=models.CASCADE)
 	organization = models.ForeignKey(Organization, on_delete=models.CASCADE)

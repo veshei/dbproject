@@ -7,7 +7,10 @@
                 {{ event.start_time.date }}
             </div>
         {% endif %}
-        {% if user.is_authenticated %}
+        {% if request.user.is_superuser %}
+        <a class="btn btn-default" href="{% url 'event_edit' pk=event.pk %}"><span class="glyphicon glyphicon-pencil"></span></a>
+        <a class="btn btn-default" href="{% url 'event_remove' pk=event.pk %}"><span class="glyphicon glyphicon-remove"></span></a>
+        {% elif user.is_authenticated and caleventorg == organization %}
         <a class="btn btn-default" href="{% url 'event_edit' pk=event.pk %}"><span class="glyphicon glyphicon-pencil"></span></a>
         <a class="btn btn-default" href="{% url 'event_remove' pk=event.pk %}"><span class="glyphicon glyphicon-remove"></span></a>
         {% endif %}
