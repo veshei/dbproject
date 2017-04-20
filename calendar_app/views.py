@@ -12,27 +12,42 @@ from django.contrib.auth import authenticate, login
 from .forms import UserForm, OrganizationForm
 from .forms import EventForm
 from .models import Event
-from .models import Calendar 
-from .models import RepeatingEvent
 from .models import Organization
 from .models import CalendarEvent
 from .models import UserOrganization
 from django.contrib.auth.models import User
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+
 
 import datetime
 
+
 # Create your views here.
 def calendar_list(request):
-	events = Event.objects.exclude(start_time__lte = datetime.date.today()).order_by('start_time')
-	organizations = Organization.objects.order_by('organization_name')
-	return render(request, 'calendar_app/calendar_list.html', {'events': events, 'organizations': organizations})
+
+    events = Event.objects.exclude(start_time__lte=datetime.date.today()).order_by('start_time')
+    organizations = Organization.objects.order_by('organization_name')
+
+    return render(request, 'calendar_app/calendar_list.html', {'events': events, 'organizations': organizations})
+
+
+def org_calendar_list(request, pk):
+    organizations = Organization.objects.order_by('organization_name')
+    organization = get_object_or_404(Organization, pk=pk)
+
+    events = CalendarEvent.objects.filter(organization=organization)
+
+    return render(request, 'calendar_app/org_calendar_list.html', {'events': events, 'organizations': organizations})
+
 
 def event_detail(request, pk):
-	event = get_object_or_404(Event, pk=pk)
-	return render(request, 'calendar_app/event_detail.html', {'event': event})
+    event = get_object_or_404(Event, pk=pk)
+    return render(request, 'calendar_app/event_detail.html', {'event': event})
+
 
 @login_required
 def event_new(request):
+
     if request.method == "POST":
         form = EventForm(request.POST)
         if form.is_valid():
@@ -43,10 +58,20 @@ def event_new(request):
             event.event_url = form.cleaned_data['event_url']
             event.location = form.cleaned_data['location']
             event.save()
+
+            userorg = UserOrganization.objects.get(user=request.user)
+            organization = userorg.organization
+
+            new_event = CalendarEvent(event=event, organization=organization, contact="None")
+            new_event.save()
+
             return redirect('calendar_list')
     else:
         form = EventForm()
+
+
     return render(request, 'calendar_app/event_edit.html', {'form': form})
+
 
 @login_required
 def event_edit(request, pk):
@@ -65,11 +90,13 @@ def event_edit(request, pk):
         form = EventForm(instance=event)
     return render(request, 'calendar_app/event_edit.html', {'form': form})
 
+
 @login_required
 def event_remove(request, pk):
     event = get_object_or_404(Event, pk=pk)
     event.delete()
     return redirect('calendar_list')
+
 
 class UserFormView(View):
     user_form_class = UserForm
@@ -113,7 +140,7 @@ class UserFormView(View):
             if user is not None:
 
                 if user.is_active:
-                    #login(request, user)
+                    # login(request, user)
                     return redirect('login')
 
         return render(request, self.template_name, {'user_form': form1, 'organization_form': form2})

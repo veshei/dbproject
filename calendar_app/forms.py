@@ -2,7 +2,6 @@ from django import forms
 
 from .models import Event
 from .models import Organization
-from .models import RepeatingEvent 
 from django.contrib.auth.models import User
 from django.contrib.admin import widgets 
 
@@ -25,14 +24,8 @@ class EventForm(forms.ModelForm):
 	#event_type = forms.CharField(required=False)
 	event_url = forms.URLField(required=False)
 	location = forms.CharField(required=False)
+	end_repeat = forms.DateTimeField(required=False)
 
 	class Meta:
 		model = Event
-		fields = ('event_title', 'start_time', 'end_time', 'event_type', 'event_url', 'location',)
-
-class RepeatingEventForm(forms.ModelForm):
-	end_repeat = forms.SplitDateTimeField(widget=widgets.AdminSplitDateTime, required=False)
-
-	class Meta:
-		model = RepeatingEvent
-		fields = ('frequency', 'day_of_week', 'end_repeat')
+		fields = ('event_title', 'start_time', 'end_time', 'event_type', 'event_url', 'location', 'frequency', 'day_of_week', 'end_repeat')

@@ -14,7 +14,7 @@
             <ul>
                <li><a href="{% url 'calendar_list' %}">PAAC List of Events</a></li>
                {% for organization in organizations %}
-                <li><a href="{% url 'event_new' %}">{{ organization.organization_name }}'s List of Events</a></li>
+                <li><a href="{% url 'org_calendar_list' pk=organization.pk %}">{{ organization.organization_name }}'s List of Events</a></li>
                {% endfor %}
             </ul>
         </div>

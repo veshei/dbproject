@@ -19,29 +19,12 @@ class Event(models.Model):
 	('Event', 'Event'), 
 	('Other', 'Other')
 )
-	event_title = models.CharField(max_length=200, null=False)
-	start_time = models.DateTimeField(null=False)
-	end_time = models.DateTimeField(null=False)
-	event_type = models.CharField(max_length=50, choices=type_choices)
-	event_url = models.URLField(max_length=200)
-	location = models.CharField(max_length=200)
-
-	def __str__(self):
-		return self.event_title
-
-class Calendar(models.Model):
-	calendar_name = models.CharField(max_length=200, null=False, unique=True)
-	color = models.CharField(max_length=100, default='blue')
-
-	def __str__(self):
-		return self.calendar_name
-
-class RepeatingEvent(models.Model):
 	frequency_choices = (
 	('daily', 'Daily'),
 	('weekly', 'Weekly'),
 	('monthly', 'Monthly'),
-	('yearly', 'Yearly')
+	('yearly', 'Yearly'),
+	('none', 'None')
 )
 	day_choices = (
 	('Sunday', 'Sunday'),
@@ -50,12 +33,20 @@ class RepeatingEvent(models.Model):
 	('Wednesday', 'Wednesday'),
 	('Thursday', 'Thursday'),
 	('Friday', 'Friday'),
-	('Saturday', 'Saturday')
+	('None', 'None')
 )
-	event_id = models.ForeignKey(Event, on_delete=models.CASCADE)
-	frequency = models.CharField(max_length=200, choices=frequency_choices, null=False)
-	day_of_week = models.CharField(max_length=200, choices=day_choices, null=False)
-	end_repeat = models.DateTimeField()
+	event_title = models.CharField(max_length=200, null=False)
+	start_time = models.DateTimeField(null=False)
+	end_time = models.DateTimeField(null=False)
+	event_type = models.CharField(max_length=50, choices=type_choices)
+	event_url = models.URLField(max_length=200)
+	location = models.CharField(max_length=200)
+	frequency = models.CharField(max_length=200, choices=frequency_choices, null=False, default='')
+	day_of_week = models.CharField(max_length=200, choices=day_choices, null=False, default='')
+	end_repeat = models.DateTimeField(null=True, blank=True)
+
+	def __str__(self):
+		return self.event_title
 
 class Organization(models.Model):
 	organization_choices = (
@@ -86,7 +77,6 @@ class UserOrganization(models.Model):
 class CalendarEvent(models.Model):
 	event = models.ForeignKey(Event, on_delete=models.CASCADE)
 	organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-	calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE)
 	contact = models.CharField(max_length=200)
 
 	def __str__(self):
