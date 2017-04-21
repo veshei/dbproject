@@ -47,9 +47,11 @@ def event_detail(request, pk):
     current_user = request.user 
     if current_user.is_superuser:
     	organization = Organization.objects.all()
-    else:
+    elif request.user.is_active:
     	userorg = UserOrganization.objects.get(user=current_user)
     	organization = userorg.organization
+    else:
+    	organization = Organization.objects.all()
     return render(request, 'calendar_app/event_detail.html', {'event': event, 'caleventorg': caleventorg, 'organization': organization})
 
 
